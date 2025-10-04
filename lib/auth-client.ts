@@ -85,6 +85,7 @@ export function useAuth() {
 					Accept: "application/json",
 				},
 				body: JSON.stringify({ email, password }),
+				credentials: "include"
 			})
 
 			if (!res.ok) {

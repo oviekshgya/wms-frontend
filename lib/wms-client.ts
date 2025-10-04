@@ -113,9 +113,10 @@ export async function transact({
 				type,
 				quantity: qty,
 				keterangan
-			})
-			//credentials: "include" // penting untuk cookie-based auth
+			}),
+			credentials: "include" // penting untuk cookie-based auth
 		})
+		console.log(res.status, res.headers.get('content-type'));
 
 		const data = await res.json()
 		if (!res.ok) {
