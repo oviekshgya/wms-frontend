@@ -55,12 +55,12 @@ export default function HomePage() {
 						<p className="text-pretty font-semibold tracking-tight">WMS Dashboard</p>
 					</div>
 					<div className="flex items-center gap-2">
-						<Tabs value={role} onValueChange={(v) => switchRole(v as Role)} className="rounded-md border">
+						{/* <Tabs value={role} onValueChange={(v) => switchRole(v as Role)} className="rounded-md border">
 							<TabsList className="grid grid-cols-2">
 								<TabsTrigger value="admin">Admin</TabsTrigger>
 								<TabsTrigger value="staff">Staff</TabsTrigger>
 							</TabsList>
-						</Tabs>
+						</Tabs> */}
 						<Button variant="outline" className="hidden md:inline-flex bg-transparent">
 							Bantuan
 						</Button>
