@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react"
 
 export type Role = "admin" | "staff"
 export type User = {
-	id: string
+	id: number
 	email: string
 	name?: string
 	role: Role
@@ -12,15 +12,7 @@ export type User = {
 
 const USER_KEY = "wms-user"
 const ROLE_KEY = "wms-role"
-const USERS_KEY = "wms-users"
-
-type StoredUser = {
-	id: string
-	email: string
-	name?: string
-	role: Role
-	password: string
-}
+const TOKEN_KEY = "wms-token"
 
 function readUser(): User | null {
 	if (typeof window === "undefined") return null
@@ -34,17 +26,6 @@ function writeUser(u: User | null) {
 	else localStorage.removeItem(USER_KEY)
 }
 
-function readUsers(): StoredUser[] {
-	if (typeof window === "undefined") return []
-	const raw = localStorage.getItem(USERS_KEY)
-	return raw ? (JSON.parse(raw) as StoredUser[]) : []
-}
-
-function writeUsers(users: StoredUser[]) {
-	if (typeof window === "undefined") return
-	localStorage.setItem(USERS_KEY, JSON.stringify(users))
-}
-
 export function useAuth() {
 	const [user, setUser] = useState<User | null>(null)
 	const [loading, setLoading] = useState(true)
@@ -54,45 +35,91 @@ export function useAuth() {
 		setLoading(false)
 	}, [])
 
+	// ✅ Register user ke backend
 	const signUp = useCallback(async (payload: { email: string; name?: string; role: Role; password: string }) => {
-		const users = readUsers()
-		const exists = users.find((u) => u.email.toLowerCase() === payload.email.toLowerCase())
-		if (exists) {
-			return { error: "Email sudah terdaftar" as const }
-		}
-		if (!payload.password || payload.password.length < 4) {
-			return { error: "Password minimal 4 karakter" as const }
-		}
-		const su: StoredUser = {
-			id: crypto.randomUUID(),
-			email: payload.email,
-			name: payload.name,
-			role: payload.role,
-			password: payload.password,
-		}
-		writeUsers([su, ...users])
+		try {
+			const res = await fetch("http://localhost:8000/api/register", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Accept: "application/json",
+				},
+				body: JSON.stringify(payload),
+			})
 
-		const sessionUser: User = { id: su.id, email: su.email, name: su.name, role: su.role }
-		writeUser(sessionUser)
-		localStorage.setItem(ROLE_KEY, su.role)
-		setUser(sessionUser)
-		return { ok: true as const }
+			if (!res.ok) {
+				const errorText = await res.text()
+				return { error: `Gagal register: ${errorText}` }
+			}
+
+			const data = await res.json()
+
+			// Simpan token & user ke localStorage
+			if (data.token) localStorage.setItem(TOKEN_KEY, data.token)
+			if (data.user) {
+				const sessionUser: User = {
+					id: data.user.id,
+					email: data.user.email,
+					name: data.user.name,
+					role: data.user.role,
+				}
+				writeUser(sessionUser)
+				localStorage.setItem(ROLE_KEY, data.user.role)
+				setUser(sessionUser)
+			}
+
+			return { ok: true as const }
+		} catch (err) {
+			console.error("Register error:", err)
+			return { error: "Terjadi kesalahan server" as const }
+		}
 	}, [])
 
+	// ✅ Login user ke backend
 	const signIn = useCallback(async (email: string, password: string) => {
-		const users = readUsers()
-		const found = users.find((u) => u.email.toLowerCase() === email.toLowerCase())
-		if (!found || found.password !== password) {
-			return { error: "Email atau password salah" as const }
+		try {
+			const res = await fetch("http://localhost:8000/api/login", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Accept: "application/json",
+				},
+				body: JSON.stringify({ email, password }),
+			})
+
+			if (!res.ok) {
+				const errorText = await res.text()
+				return { error: `Login gagal: ${errorText}` }
+			}
+
+			const data = await res.json()
+
+			// Simpan token & user ke localStorage
+			if (data.token) localStorage.setItem(TOKEN_KEY, data.token)
+			if (data.user) {
+				const sessionUser: User = {
+					id: data.user.id,
+					email: data.user.email,
+					name: data.user.name,
+					role: data.user.role,
+				}
+				writeUser(sessionUser)
+				localStorage.setItem(ROLE_KEY, data.user.role)
+				setUser(sessionUser)
+			}
+
+			return { ok: true as const }
+		} catch (err) {
+			console.error("Login error:", err)
+			return { error: "Terjadi kesalahan server" as const }
 		}
-		const sessionUser: User = { id: found.id, email: found.email, name: found.name, role: found.role }
-		writeUser(sessionUser)
-		localStorage.setItem(ROLE_KEY, found.role)
-		setUser(sessionUser)
-		return { ok: true as const }
 	}, [])
 
+	// ✅ Logout
 	const signOut = useCallback(() => {
+		localStorage.removeItem(TOKEN_KEY)
+		localStorage.removeItem(ROLE_KEY)
+		localStorage.removeItem(USER_KEY)
 		writeUser(null)
 		setUser(null)
 	}, [])

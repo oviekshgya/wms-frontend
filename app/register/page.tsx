@@ -26,14 +26,27 @@ export default function RegisterPage() {
 		e.preventDefault()
 		setLoading(true)
 		setError(null)
-		const res = await signUp({ email, name, role, password })
-		setLoading(false)
-		if ("error" in res) {
-			setError(res.error ?? null)
-			return
+
+		try {
+			const res = await signUp({ email, name, role, password })
+			setLoading(false)
+
+			if ("error" in res) {
+				setError(res.error ?? null)
+				return
+			}
+
+			// Simpan role ke localStorage (token tidak ada di versi ini)
+			localStorage.setItem("wms-role", role)
+
+			router.replace("/")
+		} catch (err) {
+			setLoading(false)
+			setError("Terjadi kesalahan. Coba lagi.")
 		}
-		router.replace("/")
 	}
+
+
 
 	return (
 		<main className="min-h-svh flex items-center justify-center px-4">
