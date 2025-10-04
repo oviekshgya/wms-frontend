@@ -47,9 +47,11 @@ function writeUsers(users: StoredUser[]) {
 
 export function useAuth() {
 	const [user, setUser] = useState<User | null>(null)
+	const [loading, setLoading] = useState(true)
 
 	useEffect(() => {
 		setUser(readUser())
+		setLoading(false)
 	}, [])
 
 	const signUp = useCallback(async (payload: { email: string; name?: string; role: Role; password: string }) => {
@@ -83,7 +85,6 @@ export function useAuth() {
 		if (!found || found.password !== password) {
 			return { error: "Email atau password salah" as const }
 		}
-		// gunakan role tersimpan; abaikan role input untuk konsistensi akun
 		const sessionUser: User = { id: found.id, email: found.email, name: found.name, role: found.role }
 		writeUser(sessionUser)
 		localStorage.setItem(ROLE_KEY, found.role)
@@ -96,5 +97,5 @@ export function useAuth() {
 		setUser(null)
 	}, [])
 
-	return { user, signUp, signIn, signOut }
+	return { user, loading, signUp, signIn, signOut }
 }

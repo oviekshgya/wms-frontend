@@ -8,11 +8,6 @@ export default function LoginPage() {
 	const router = useRouter()
 	return (
 		<main className="min-h-svh grid place-items-center px-4 py-10">
-			<div className="absolute left-4 top-4">
-				<Button variant="ghost" onClick={() => router.push("/")}>
-					← Kembali
-				</Button>
-			</div>
 			<div className="w-full max-w-md">
 				<div className="mb-6 text-center">
 					<div className="mx-auto mb-3 size-10 rounded-md bg-primary/10 ring-1 ring-primary/20" />
@@ -20,9 +15,6 @@ export default function LoginPage() {
 					<p className="text-sm text-muted-foreground">Masuk untuk mengelola persediaan Anda</p>
 				</div>
 				<LoginForm />
-				<p className="mt-4 text-center text-xs text-muted-foreground">
-					Demo tanpa backend — data disimpan di browser Anda.
-				</p>
 			</div>
 		</main>
 	)

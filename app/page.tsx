@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -11,6 +11,8 @@ import { ItemForm } from "@/components/item-form"
 import { TransactionForm } from "@/components/transaction-form"
 import { StockChart } from "@/components/stock-chart"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/lib/auth-client"
+import { useRouter } from "next/navigation"
 
 // Simple role type
 type Role = "admin" | "staff"
@@ -25,6 +27,19 @@ export default function HomePage() {
 	const totalSku = items.length
 	const totalStok = items.reduce((acc, it) => acc + it.stok, 0)
 	const lowStockCount = items.filter((it) => it.stok <= 5).length
+
+	const router = useRouter()
+	const { user, signOut, loading } = useAuth()
+
+	useEffect(() => {
+		if (!loading && !user) {
+			router.replace("/login")
+		}
+	}, [loading, user, router])
+
+	if (loading) return <p>Loading...</p>
+	if (!user) return null
+
 
 	function switchRole(next: Role) {
 		setRole(next)
@@ -48,6 +63,16 @@ export default function HomePage() {
 						</Tabs>
 						<Button variant="outline" className="hidden md:inline-flex bg-transparent">
 							Bantuan
+						</Button>
+						{/* Tombol Sign Out */}
+						<Button
+							variant="destructive"
+							onClick={() => {
+								signOut()
+								router.replace("/login")
+							}}
+						>
+							Keluar
 						</Button>
 					</div>
 				</div>
