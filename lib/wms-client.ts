@@ -22,6 +22,11 @@ export type Movement = {
 const STORE_KEY = "wms-items-v1"
 const MOVE_KEY = "wms-moves-v1"
 
+
+const API_URL = "http://localhost:9000/api"
+const TOKEN = localStorage.getItem("wms-token")
+
+
 function ensureSeeded() {
 	if (typeof window === "undefined") return
 	if (!localStorage.getItem(STORE_KEY)) {
@@ -65,28 +70,122 @@ function writeMoves(moves: Movement[]) {
 }
 
 // Public API (simulate async)
-export async function getItems(): Promise<Item[]> {
-	return readItems()
+async function getItems(params?: { search?: string; sort?: string }) {
+	const token = typeof window !== "undefined" ? localStorage.getItem("wms-token") : null
+	if (!token) throw new Error("Token tidak ditemukan di localStorage")
+
+	const query = new URLSearchParams()
+	if (params?.search) query.append("search", params.search)
+	if (params?.sort) query.append("sort", params.sort)
+
+	const res = await fetch(`${API_URL}/items?${query.toString()}`, {
+		headers: {
+			"Authorization": `Bearer ${token}`,
+			"Content-Type": "application/json",
+		},
+	})
+
+	if (!res.ok) {
+		const errText = await res.text()
+		throw new Error(errText)
+	}
+
+	const json = await res.json()
+	// Backend Laravel mengirimkan paginated response
+	// Kita hanya ambil field "data" (array item)
+	return json.data.map((it: any) => ({
+		id: it.id,
+		namaBarang: it.nama_barang,
+		sku: it.sku,
+		stok: it.stok,
+		lokasiRak: it.lokasi_rak,
+	}))
 }
+
 export async function getMovements(): Promise<Movement[]> {
 	return readMoves()
 }
-export async function createItem(payload: Omit<Item, "id">) {
-	const items = readItems()
-	items.push({ id: nanoid(), ...payload })
-	writeItems(items)
-	await globalMutate("items")
+
+export async function createItem(payload: {
+	namaBarang: string
+	sku: string
+	stok: number
+	lokasiRak: string
+}) {
+	const res = await fetch(`${API_URL}/items`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${TOKEN}`,
+		},
+		body: JSON.stringify({
+			nama_barang: payload.namaBarang,
+			sku: payload.sku,
+			stok: payload.stok,
+			lokasi_rak: payload.lokasiRak,
+		}),
+	})
+
+	if (!res.ok) {
+		const errText = await res.text()
+		throw new Error(errText)
+	}
+
+	return res.json()
 }
-export async function updateItem(id: string, payload: Partial<Omit<Item, "id">>) {
-	const items = readItems().map((it) => (it.id === id ? { ...it, ...payload } : it))
-	writeItems(items)
-	await globalMutate("items")
+
+export async function updateItem(
+	id: number | string,
+	payload: {
+		namaBarang: string
+		sku: string
+		stok: number
+		lokasiRak: string
+	}
+) {
+	const res = await fetch(`${API_URL}/items/${id}`, {
+		method: "PUT",
+		headers: {
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${TOKEN}`,
+		},
+		body: JSON.stringify({
+			nama_barang: payload.namaBarang,
+			sku: payload.sku,
+			stok: payload.stok,
+			lokasi_rak: payload.lokasiRak,
+		}),
+	})
+
+	if (!res.ok) {
+		const errText = await res.text()
+		throw new Error(errText)
+	}
+
+	return res.json()
 }
-export async function deleteItem(id: string) {
-	const items = readItems().filter((it) => it.id !== id)
-	writeItems(items)
-	await globalMutate("items")
+
+export async function deleteItem(id: number | string) {
+	const token = typeof window !== "undefined" ? localStorage.getItem("wms-token") : null
+	if (!token) throw new Error("Token tidak ditemukan di localStorage")
+
+	const res = await fetch(`${API_URL}/items/${id}`, {
+		method: "DELETE",
+		headers: {
+			"Authorization": `Bearer ${token}`,
+			"Content-Type": "application/json",
+		},
+	})
+
+	if (!res.ok) {
+		const errText = await res.text()
+		throw new Error(errText)
+	}
+
+	return res.json()
 }
+
+
 export async function transact({
 	itemId,
 	type,
@@ -130,13 +229,17 @@ export async function transact({
 }
 
 // SWR hooks
-export function useItems() {
-	const { data, isLoading, mutate } = useSWR<Item[]>("items", getItems, { revalidateOnFocus: false })
+
+export function useItems(search?: string, sort?: string) {
+	const { data, error, isLoading, mutate } = useSWR(["items", search, sort], () =>
+		getItems({ search, sort })
+	)
+
 	return {
 		items: data || [],
 		isLoading,
-		mutateItems: () => mutate(),
-		mutateMovements: () => globalMutate("moves"),
+		error,
+		mutateItems: mutate,
 	}
 }
 export function useMovements() {
