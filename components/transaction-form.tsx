@@ -66,7 +66,7 @@ export function TransactionForm() {
 		<form onSubmit={onSubmit} className="grid gap-3">
 			<div className="grid gap-1">
 				<Label>Barang</Label>
-				<Select value={String(itemId ?? "")} onValueChange={(v) => setItemId(Number(v))}>
+				<Select value={String(itemId ?? "")} onValueChange={(v) => setItemId(String(v))}>
 					<SelectTrigger>
 						<SelectValue placeholder={items.length ? "Pilih barang" : "Memuat..."} />
 					</SelectTrigger>
