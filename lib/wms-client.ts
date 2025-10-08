@@ -2,6 +2,7 @@
 
 import useSWR, { mutate as globalMutate } from "swr"
 import { nanoid } from "nanoid"
+import { useEffect, useState } from "react"
 
 export type Item = {
 	id: string
@@ -253,12 +254,39 @@ export function useItems(search?: string, sort?: string) {
 	}
 }
 
-export function useMovements() {
-	const { data, isLoading, mutate } = useSWR<Movement[]>("moves", getMovements, { revalidateOnFocus: false })
-	return {
-		movements: data || ([] as Movement[]),
-		isLoading,
-		mutate,
-	}
-}
 
+export function useMovements() {
+	const [movements, setMovements] = useState<Movement[]>([])
+	const [loading, setLoading] = useState(true)
+	const [error, setError] = useState<string | null>(null)
+
+	useEffect(() => {
+		async function load() {
+			try {
+				const token = localStorage.getItem("wms-token")
+				const res = await fetch("http://localhost:9000/api/reports/weekly-movements", {
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				})
+				if (!res.ok) throw new Error(`HTTP ${res.status}`)
+				const data = await res.json()
+
+				// Pastikan format numerik
+				const parsed = data.map((m: any) => ({
+					date: m.date,
+					type: m.type,
+					qty: Number(m.total),
+				}))
+				setMovements(parsed)
+			} catch (e: any) {
+				setError(e.message)
+			} finally {
+				setLoading(false)
+			}
+		}
+		load()
+	}, [])
+
+	return { movements, loading, error }
+}

@@ -15,7 +15,8 @@ import { useToast } from "@/hooks/use-toast"
 
 export function TransactionForm() {
 	const { items, mutateItems } = useItems()
-	const { mutate: mutateMovements } = useMovements()
+	const { movements } = useMovements()
+
 	const { showToast } = useToast()
 
 	// jangan gunakan items[0]?.id di initial state (items mungkin belum ada saat first render)
@@ -57,7 +58,7 @@ export function TransactionForm() {
 			return
 		}
 
-		await Promise.all([mutateItems(), mutateMovements()])
+		// await Promise.all([mutateItems(), mutateMovements()])
 		showToast("Transaksi berhasil")
 		setQty(1)
 	}
