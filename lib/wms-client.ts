@@ -24,7 +24,7 @@ const MOVE_KEY = "wms-moves-v1"
 
 
 const API_URL = "http://localhost:9000/api"
-const TOKEN = localStorage.getItem("wms-token")
+// const TOKEN = localStorage.getItem("wms-token")
 
 
 function ensureSeeded() {
@@ -112,11 +112,13 @@ export async function createItem(payload: {
 	stok: number
 	lokasiRak: string
 }) {
+	const token = typeof window !== "undefined" ? localStorage.getItem("wms-token") : null
+	if (!token) throw new Error("Token tidak ditemukan di localStorage")
 	const res = await fetch(`${API_URL}/items`, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
-			Authorization: `Bearer ${TOKEN}`,
+			Authorization: `Bearer ${token}`,
 		},
 		body: JSON.stringify({
 			nama_barang: payload.namaBarang,
@@ -143,11 +145,14 @@ export async function updateItem(
 		lokasiRak: string
 	}
 ) {
+	const token = typeof window !== "undefined" ? localStorage.getItem("wms-token") : null
+	if (!token) throw new Error("Token tidak ditemukan di localStorage")
+
 	const res = await fetch(`${API_URL}/items/${id}`, {
 		method: "PUT",
 		headers: {
 			"Content-Type": "application/json",
-			Authorization: `Bearer ${TOKEN}`,
+			Authorization: `Bearer ${token}`,
 		},
 		body: JSON.stringify({
 			nama_barang: payload.namaBarang,
