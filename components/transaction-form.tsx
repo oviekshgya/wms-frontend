@@ -20,7 +20,7 @@ export function TransactionForm() {
 	const { showToast } = useToast()
 
 	// jangan gunakan items[0]?.id di initial state (items mungkin belum ada saat first render)
-	const [itemId, setItemId] = useState<string | undefined>(undefined)
+	const [itemId, setItemId] = useState<number | undefined>(undefined)
 	const [type, setType] = useState<"in" | "out">("in")
 	const [qty, setQty] = useState<number>(1)
 	const [keterangan, setKeterangan] = useState<string>("Input")
@@ -28,7 +28,7 @@ export function TransactionForm() {
 	// set default selected item ketika items sudah ter-fetch
 	useEffect(() => {
 		if (!itemId && items.length > 0) {
-			setItemId(items[0].id)
+			setItemId(Number(items[0].id))
 		}
 	}, [items, itemId])
 
@@ -39,7 +39,7 @@ export function TransactionForm() {
 			return
 		}
 
-		const selected = items.find((it) => it.id === itemId)
+		const selected = items.find((it) => Number(it.id) === itemId)
 		if (!selected) {
 			showToast("Barang tidak ditemukan")
 			return
@@ -67,7 +67,7 @@ export function TransactionForm() {
 		<form onSubmit={onSubmit} className="grid gap-3">
 			<div className="grid gap-1">
 				<Label>Barang</Label>
-				<Select value={String(itemId ?? "")} onValueChange={(v) => setItemId(String(v))}>
+				<Select value={String(itemId ?? "")} onValueChange={(v) => setItemId(Number(v))}>
 					<SelectTrigger>
 						<SelectValue placeholder={items.length ? "Pilih barang" : "Memuat..."} />
 					</SelectTrigger>
