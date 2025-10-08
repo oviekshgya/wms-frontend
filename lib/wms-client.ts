@@ -106,6 +106,7 @@ export async function getMovements(): Promise<Movement[]> {
 	return readMoves()
 }
 
+
 export async function createItem(payload: {
 	namaBarang: string
 	sku: string
@@ -190,7 +191,6 @@ export async function deleteItem(id: number | string) {
 	return res.json()
 }
 
-
 export async function transact({
 	itemId,
 	type,
@@ -206,25 +206,29 @@ export async function transact({
 		const token = typeof window !== "undefined" ? localStorage.getItem("wms-token") : null
 		if (!token) throw new Error("User tidak terautentikasi")
 
-		const res = await fetch("http://localhost:8000/api/transactions", {
+		const res = await fetch(`${API_URL}/transactions`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
 				Authorization: `Bearer ${token}`
 			},
 			body: JSON.stringify({
-				item_id: itemId,
+				item_id: Number(itemId),
 				type,
 				quantity: qty,
 				keterangan
-			}),
-			credentials: "include" // penting untuk cookie-based auth
+			})
 		})
-		console.log(res.status, res.headers.get('content-type'));
 
-		const data = await res.json()
+		let data: any
+		try {
+			data = await res.json()
+		} catch {
+			return { error: `Server returned non-JSON (status ${res.status})` }
+		}
+
 		if (!res.ok) {
-			return { error: data.message || "Transaksi gagal" }
+			return { error: data?.message || JSON.stringify(data) || "Transaksi gagal" }
 		}
 
 		return { transaction: data.transaction, item: data.item }
@@ -236,22 +240,25 @@ export async function transact({
 // SWR hooks
 
 export function useItems(search?: string, sort?: string) {
-	const { data, error, isLoading, mutate } = useSWR(["items", search, sort], () =>
-		getItems({ search, sort })
+	const { data, error, isLoading, mutate } = useSWR<Item[]>(
+		["items", search, sort],
+		() => getItems({ search, sort })
 	)
 
 	return {
-		items: data || [],
+		items: data || ([] as Item[]),
 		isLoading,
 		error,
 		mutateItems: mutate,
 	}
 }
+
 export function useMovements() {
 	const { data, isLoading, mutate } = useSWR<Movement[]>("moves", getMovements, { revalidateOnFocus: false })
 	return {
-		movements: data || [],
+		movements: data || ([] as Movement[]),
 		isLoading,
 		mutate,
 	}
 }
+
