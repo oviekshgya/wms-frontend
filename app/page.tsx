@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
-import { useItems } from "@/lib/wms-client"
+import { useItems, Item } from "@/lib/wms-client"
 import { ItemsTable } from "@/components/items-table"
 import { ItemForm } from "@/components/item-form"
 import { TransactionForm } from "@/components/transaction-form"
@@ -22,7 +22,9 @@ export default function HomePage() {
 		(typeof window !== "undefined" && (localStorage.getItem("wms-role") as Role)) || "admin",
 	)
 
-	const { items } = useItems()
+	// const { items } = useItems()
+	const { items = [] } = useItems() as { items: Item[] }
+
 
 	const totalSku = items.length
 	const totalStok = items.reduce((acc, it) => acc + it.stok, 0)
