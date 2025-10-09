@@ -69,6 +69,7 @@ export function TransactionForm() {
 			setQty(1)
 
 			// Fetch ulang items dan movements
+			// await Promise.all([mutateItems?.(), mutateMovements?.()])
 			await Promise.all([mutateItems?.(), mutateMovements?.()])
 
 		} finally {

@@ -103,8 +103,31 @@ async function getItems(params?: { search?: string; sort?: string }) {
 	}))
 }
 
-export async function getMovements(): Promise<Movement[]> {
-	return readMoves()
+async function getMovements(): Promise<Movement[]> {
+	const token = typeof window !== "undefined" ? localStorage.getItem("wms-token") : null
+	if (!token) throw new Error("User tidak terautentikasi")
+
+	const res = await fetch("http://localhost:9000/api/reports/weekly-movements", {
+		headers: {
+			Authorization: `Bearer ${token}`,
+		},
+	})
+
+	if (!res.ok) {
+		const text = await res.text()
+		throw new Error(text || `HTTP ${res.status}`)
+	}
+
+	const data = await res.json()
+
+	// Parsing response agar sesuai type Movement
+	return data.map((m: any) => ({
+		id: m.id ?? `${m.date}-${m.type}-${Math.random()}`,
+		itemId: m.item_id ?? "",
+		type: m.type as "in" | "out",
+		qty: Number(m.total),
+		date: m.date,
+	}))
 }
 
 
@@ -254,39 +277,56 @@ export function useItems(search?: string, sort?: string) {
 	}
 }
 
+
+// export function useMovements() {
+// 	const [movements, setMovements] = useState<Movement[]>([])
+// 	const [loading, setLoading] = useState(true)
+// 	const [error, setError] = useState<string | null>(null)
+
+
+
+// 	async function loadMovements() {
+// 		try {
+// 			setLoading(true)
+// 			const token = localStorage.getItem("wms-token")
+// 			const res = await fetch("http://localhost:9000/api/reports/weekly-movements", {
+// 				headers: {
+// 					Authorization: `Bearer ${token}`,
+// 				},
+// 			})
+// 			if (!res.ok) throw new Error(`HTTP ${res.status}`)
+// 			const data = await res.json()
+
+// 			const parsed = data.map((m: any) => ({
+// 				date: m.date,
+// 				type: m.type,
+// 				qty: Number(m.total),
+// 			}))
+// 			setMovements(parsed)
+// 		} catch (e: any) {
+// 			setError(e.message)
+// 		} finally {
+// 			setLoading(false)
+// 		}
+// 	}
+
+// 	useEffect(() => {
+// 		loadMovements()
+// 	}, [])
+
+// 	return { movements, loading, error, mutateMovements: loadMovements }
+// }
+
 export function useMovements() {
-	const [movements, setMovements] = useState<Movement[]>([])
-	const [loading, setLoading] = useState(true)
-	const [error, setError] = useState<string | null>(null)
+	const { data, error, isLoading, mutate } = useSWR<Movement[]>(
+		"movements",  // key global, semua komponen share state
+		getMovements
+	)
 
-	async function loadMovements() {
-		try {
-			setLoading(true)
-			const token = localStorage.getItem("wms-token")
-			const res = await fetch("http://localhost:9000/api/reports/weekly-movements", {
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			})
-			if (!res.ok) throw new Error(`HTTP ${res.status}`)
-			const data = await res.json()
-
-			const parsed = data.map((m: any) => ({
-				date: m.date,
-				type: m.type,
-				qty: Number(m.total),
-			}))
-			setMovements(parsed)
-		} catch (e: any) {
-			setError(e.message)
-		} finally {
-			setLoading(false)
-		}
+	return {
+		movements: data || [],
+		loading: isLoading,
+		error: error ? (error as Error).message : null,
+		mutateMovements: mutate, // gunakan ini di TransactionForm / ItemForm
 	}
-
-	useEffect(() => {
-		loadMovements()
-	}, [])
-
-	return { movements, loading, error, mutateMovements: loadMovements }
 }

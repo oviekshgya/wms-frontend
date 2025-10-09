@@ -63,9 +63,6 @@ export default function HomePage() {
 								<TabsTrigger value="staff">Staff</TabsTrigger>
 							</TabsList>
 						</Tabs> */}
-						<Button variant="outline" className="hidden md:inline-flex bg-transparent">
-							Bantuan
-						</Button>
 						{/* Tombol Sign Out */}
 						<Button
 							variant="destructive"
