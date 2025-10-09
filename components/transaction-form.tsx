@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { transact, useItems, useMovements } from "@/lib/wms-client"
 import { useToast } from "@/hooks/use-toast"
+import { mutate as globalMutate } from "swr"
+
 
 
 
