@@ -254,39 +254,39 @@ export function useItems(search?: string, sort?: string) {
 	}
 }
 
-
 export function useMovements() {
 	const [movements, setMovements] = useState<Movement[]>([])
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
 
-	useEffect(() => {
-		async function load() {
-			try {
-				const token = localStorage.getItem("wms-token")
-				const res = await fetch("http://localhost:9000/api/reports/weekly-movements", {
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
-				})
-				if (!res.ok) throw new Error(`HTTP ${res.status}`)
-				const data = await res.json()
+	async function loadMovements() {
+		try {
+			setLoading(true)
+			const token = localStorage.getItem("wms-token")
+			const res = await fetch("http://localhost:9000/api/reports/weekly-movements", {
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			})
+			if (!res.ok) throw new Error(`HTTP ${res.status}`)
+			const data = await res.json()
 
-				// Pastikan format numerik
-				const parsed = data.map((m: any) => ({
-					date: m.date,
-					type: m.type,
-					qty: Number(m.total),
-				}))
-				setMovements(parsed)
-			} catch (e: any) {
-				setError(e.message)
-			} finally {
-				setLoading(false)
-			}
+			const parsed = data.map((m: any) => ({
+				date: m.date,
+				type: m.type,
+				qty: Number(m.total),
+			}))
+			setMovements(parsed)
+		} catch (e: any) {
+			setError(e.message)
+		} finally {
+			setLoading(false)
 		}
-		load()
+	}
+
+	useEffect(() => {
+		loadMovements()
 	}, [])
 
-	return { movements, loading, error }
+	return { movements, loading, error, mutateMovements: loadMovements }
 }

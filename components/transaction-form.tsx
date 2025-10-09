@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast"
 
 export function TransactionForm() {
 	const { items, mutateItems } = useItems()
-	const { movements } = useMovements()
+	const { movements, mutateMovements } = useMovements()
 
 	const { showToast } = useToast()
 
@@ -31,6 +31,9 @@ export function TransactionForm() {
 			setItemId(Number(items[0].id))
 		}
 	}, [items, itemId])
+
+	// Tambahkan state loading
+	const [loadingSubmit, setLoadingSubmit] = useState(false)
 
 	async function onSubmit(e: React.FormEvent) {
 		e.preventDefault()
@@ -51,17 +54,26 @@ export function TransactionForm() {
 			return
 		}
 
-		const res = await transact({ itemId: Number(itemId), type, qty, keterangan })
+		try {
+			setLoadingSubmit(true)
+			const res = await transact({ itemId: Number(itemId), type, qty, keterangan })
 
-		if ((res as any).error) {
-			showToast(`Transaksi gagal: ${(res as any).error}`)
-			return
+			if ((res as any).error) {
+				showToast(`Transaksi gagal: ${(res as any).error}`)
+				return
+			}
+
+			showToast("Transaksi berhasil")
+			setQty(1)
+
+			// Fetch ulang items dan movements
+			await Promise.all([mutateItems?.(), mutateMovements?.()])
+
+		} finally {
+			setLoadingSubmit(false)
 		}
-
-		// await Promise.all([mutateItems(), mutateMovements()])
-		showToast("Transaksi berhasil")
-		setQty(1)
 	}
+
 
 	return (
 		<form onSubmit={onSubmit} className="grid gap-3">
@@ -118,9 +130,10 @@ export function TransactionForm() {
 				</div>
 			</div>
 
-			<Button type="submit" className="w-full" disabled={!items.length}>
-				Proses
+			<Button type="submit" className="w-full" disabled={!items.length || loadingSubmit}>
+				{loadingSubmit ? "Memproses..." : "Proses"}
 			</Button>
+
 		</form>
 	)
 }
