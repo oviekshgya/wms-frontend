@@ -22,9 +22,9 @@ export function ItemsTable({ role }: { role: Role }) {
 
 	const sortParam = `${sortKey}:${sortDir}`
 
-	const { items = [], isLoading, mutateItems } = useItems(query, sortParam) as {
+	const { items = [], loading: isLoading, mutateItems } = useItems(query, sortParam) as {
 		items: Item[]
-		isLoading: boolean
+		loading: boolean
 		mutateItems: () => Promise<void>
 	}
 

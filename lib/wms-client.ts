@@ -262,60 +262,19 @@ export async function transact({
 }
 
 // SWR hooks
-
 export function useItems(search?: string, sort?: string) {
-	const { data, error, isLoading, mutate } = useSWR<Item[]>(
-		["items", search, sort],
-		() => getItems({ search, sort })
+	const key = ["items", search ?? "", sort ?? ""] // key unik SWR
+	const { data, error, isLoading, mutate } = useSWR<Item[]>(key, () =>
+		getItems({ search, sort })
 	)
 
 	return {
-		items: data || ([] as Item[]),
-		isLoading,
-		error,
-		mutateItems: mutate,
+		items: data || [],
+		loading: isLoading,
+		error: error ? (error as Error).message : null,
+		mutateItems: mutate, // gunakan ini di TransactionForm
 	}
 }
-
-
-// export function useMovements() {
-// 	const [movements, setMovements] = useState<Movement[]>([])
-// 	const [loading, setLoading] = useState(true)
-// 	const [error, setError] = useState<string | null>(null)
-
-
-
-// 	async function loadMovements() {
-// 		try {
-// 			setLoading(true)
-// 			const token = localStorage.getItem("wms-token")
-// 			const res = await fetch("http://localhost:9000/api/reports/weekly-movements", {
-// 				headers: {
-// 					Authorization: `Bearer ${token}`,
-// 				},
-// 			})
-// 			if (!res.ok) throw new Error(`HTTP ${res.status}`)
-// 			const data = await res.json()
-
-// 			const parsed = data.map((m: any) => ({
-// 				date: m.date,
-// 				type: m.type,
-// 				qty: Number(m.total),
-// 			}))
-// 			setMovements(parsed)
-// 		} catch (e: any) {
-// 			setError(e.message)
-// 		} finally {
-// 			setLoading(false)
-// 		}
-// 	}
-
-// 	useEffect(() => {
-// 		loadMovements()
-// 	}, [])
-
-// 	return { movements, loading, error, mutateMovements: loadMovements }
-// }
 
 export function useMovements() {
 	const { data, error, isLoading, mutate } = useSWR<Movement[]>(
