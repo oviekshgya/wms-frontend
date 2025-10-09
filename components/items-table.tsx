@@ -83,7 +83,8 @@ export function ItemsTable({ role }: { role: Role }) {
 						value={query}
 						onChange={(e) => setQuery(e.target.value)}
 					/>
-					{role === "admin" && <ItemForm asButton />}
+					{role === "admin" && <ItemForm asButton onSuccess={mutateItems} />}
+
 				</div>
 			</CardHeader>
 			<CardContent className="overflow-x-auto">
@@ -126,7 +127,8 @@ export function ItemsTable({ role }: { role: Role }) {
 													</Button>
 												</DropdownMenuTrigger>
 												<DropdownMenuContent align="end">
-													<ItemForm item={it} asMenuItem />
+													<ItemForm item={it} asMenuItem onSuccess={mutateItems} />
+
 													<DropdownMenuItem className="text-destructive" onClick={() => onDelete(it.id)}>
 														Hapus
 													</DropdownMenuItem>
