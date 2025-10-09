@@ -1,36 +1,23 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
-## Getting Started
-
-First, run the development server:
+## wms Frontend | Oviek Shagya Ghinulur
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+$ npm install
+$ npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Soal
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+	1. WMS -> solusi untuk membantu mengetahui produk low stok:
 
-## Learn More
+	Tambahkan atribut min_stock per item. Buat scheduler (php artisan schedule:run) yang setiap hari memeriksa items dengan stok <= min_stock. Hasil dikirim via email/Slack atau ditampilkan di dashboard sebagai daftar low stock. Tampilkan juga lead time dan supplier rekomendasi. Untuk prioritas, urutkan berdasarkan turnover rate (how fast item keluar).
 
-To learn more about Next.js, take a look at the following resources:
+	2. Cara membuat automasi penetapan minimum stok yang baik:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+	Gunakan metode berbasis historis dan lead time:
+	Reorder Point = (Avg Daily Demand * Lead Time) + Safety Stock.
+	Hitung Avg Daily Demand dari data transaksi (misal 90 hari terakhir). Estimasi lead time dari supplier. Safety stock dihitung menggunakan deviasi permintaan selama lead time dikali faktor z (service level). Untuk implementasi cepat, sediakan opsi rule-based: (min_stock = max( fixed_min, ceil(avg_weekly_demand * lead_time * factor) )). Update perhitungan setiap bulan.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+	3. Bagaimana sistem memprediksi kebutuhan pengeluaran bulanan per produk
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+	Gunakan time-series forecasting (Prophet, SARIMA, atau Eksponensial Smoothing) pada data historis keluaran per produk untuk memprediksi quantity bulanan. Kalikan prediksi quantity dengan harga rata-rata per unit (dari purchase history) -> estimasi pengeluaran. Untuk implementasi MVP, gunakan moving average 3–6 bulan dikalikan faktor musiman. Simpan confidence interval untuk mengukur risiko stokout atau overstock.
