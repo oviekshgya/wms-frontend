@@ -1,5 +1,13 @@
 ## wms Frontend | Oviek Shagya Ghinulur
 
+
+## Requirements
+- Backend: https://github.com/oviekshgya/wms-backend
+- Node.js >= 18
+
+
+## Running 
+
 ```bash
 $ npm install
 $ npm run dev
