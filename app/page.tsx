@@ -115,14 +115,14 @@ export default function HomePage() {
 						</CardContent>
 					</Card>
 					<Card>
-						<CardHeader>
+						{/* <CardHeader>
 							<CardTitle className="text-pretty">Aksi Cepat</CardTitle>
-						</CardHeader>
+						</CardHeader> */}
 						<CardContent className="grid gap-3">
 							{role === "admin" ? (
 								<>
-									<ItemForm />
-									<Separator />
+									{/* <ItemForm /> */}
+									{/* <Separator /> */}
 									<TransactionForm />
 								</>
 							) : (
