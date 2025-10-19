@@ -24,7 +24,7 @@ const STORE_KEY = "wms-items-v1"
 const MOVE_KEY = "wms-moves-v1"
 
 
-const API_URL = "http://localhost:9000/api"
+const API_URL = "http://localhost:8000/api"
 // const TOKEN = localStorage.getItem("wms-token")
 
 
@@ -107,7 +107,7 @@ async function getMovements(): Promise<Movement[]> {
 	const token = typeof window !== "undefined" ? localStorage.getItem("wms-token") : null
 	if (!token) throw new Error("User tidak terautentikasi")
 
-	const res = await fetch("http://localhost:9000/api/reports/weekly-movements", {
+	const res = await fetch("http://localhost:8000/api/reports/weekly-movements", {
 		headers: {
 			Authorization: `Bearer ${token}`,
 		},

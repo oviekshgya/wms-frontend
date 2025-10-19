@@ -38,7 +38,7 @@ export function useAuth() {
 	// ✅ Register user ke backend
 	const signUp = useCallback(async (payload: { email: string; name?: string; role: Role; password: string }) => {
 		try {
-			const res = await fetch("http://localhost:9000/api/register", {
+			const res = await fetch("http://localhost:8000/api/register", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -78,7 +78,7 @@ export function useAuth() {
 	// ✅ Login user ke backend
 	const signIn = useCallback(async (email: string, password: string) => {
 		try {
-			const res = await fetch("http://localhost:9000/api/login", {
+			const res = await fetch("http://localhost:8000/api/login", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
