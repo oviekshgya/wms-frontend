@@ -13,6 +13,7 @@ import { StockChart } from "@/components/stock-chart"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-client"
 import { useRouter } from "next/navigation"
+import { TransactionsTable, Transaction } from "@/components/transactions-table"
 
 // Simple role type
 type Role = "admin" | "staff"
@@ -32,6 +33,27 @@ export default function HomePage() {
 
 	const router = useRouter()
 	const { user, signOut, loading } = useAuth()
+
+	const dummyTransactions: Transaction[] = [
+		{
+			id: "1",
+			itemName: "Kertas A4",
+			user: "Admin",
+			type: "in",
+			quantity: 100,
+			note: "Stok baru masuk",
+			date: "2025-10-19T08:00:00Z",
+		},
+		{
+			id: "2",
+			itemName: "Pulpen Biru",
+			user: "Staff 1",
+			type: "out",
+			quantity: 20,
+			note: "Digunakan untuk kantor",
+			date: "2025-10-18T12:00:00Z",
+		},
+	]
 
 	useEffect(() => {
 		if (!loading && !user) {
@@ -140,6 +162,11 @@ export default function HomePage() {
 				<div className="mt-6">
 					<ItemsTable role={role} />
 				</div>
+				<div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+					<ItemsTable role={role} />
+					<TransactionsTable transactions={dummyTransactions} />
+				</div>
+
 			</section>
 
 			<footer className="border-t">
